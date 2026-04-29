@@ -1,14 +1,19 @@
 FROM python:3.12-slim
 
-# Install uv (fast Python package manager)
+# Install git (required to install packages from GitHub)
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+
+# Install uv
 RUN pip install uv
 
-# Install the reddit MCP server from GitHub
-RUN uv pip install --system \
-    "git+https://github.com/eliasbiondo/reddit-mcp-server.git"
+# Clone the repo
+RUN git clone https://github.com/eliasbiondo/reddit-mcp-server.git /app
 
-# Expose port
+WORKDIR /app
+
+# Install dependencies
+RUN uv pip install --system -e .
+
 EXPOSE 8000
 
-# Start the server
 CMD ["reddit-no-auth-mcp-server", "--transport", "streamable-http", "--host", "0.0.0.0", "--port", "8000"]
